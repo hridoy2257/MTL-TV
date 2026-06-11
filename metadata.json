@@ -1,0 +1,6 @@
+{
+  "name": "MTL TV",
+  "description": "Live TV streaming application with various sports, news, and entertainment channels.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
