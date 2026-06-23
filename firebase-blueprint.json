@@ -1,0 +1,21 @@
+{
+  "entities": {
+    "SettingsConfig": {
+      "title": "SettingsConfig",
+      "description": "General application settings",
+      "type": "object",
+      "properties": {
+        "csvUrl": {
+          "type": "string",
+          "description": "The URL to the Google Sheet CSV containing sports channels"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/settings/{settingId}": {
+      "schema": "SettingsConfig",
+      "description": "Settings for the application"
+    }
+  }
+}
