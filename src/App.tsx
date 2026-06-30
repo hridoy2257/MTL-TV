@@ -6,6 +6,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Tv, Menu, X, PlayCircle } from 'lucide-react';
 import { HlsPlayer } from './components/HlsPlayer';
+import { AdminDashboard } from './components/AdminDashboard';
 import { channels as staticChannels, CATEGORIES, Channel } from './data';
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -23,9 +24,6 @@ export default function App() {
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [dynamicChannels, setDynamicChannels] = useState<Channel[]>([]);
   const [isAdminView, setIsAdminView] = useState(window.location.hash === '#admin');
-  const [adminCsvUrl, setAdminCsvUrl] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState('');
 
   useEffect(() => {
     const handleHashChange = () => setIsAdminView(window.location.hash === '#admin');
@@ -38,7 +36,6 @@ export default function App() {
     const unsub = onSnapshot(doc(db, "settings", "sports"), (docSnap) => {
       if (docSnap.exists() && docSnap.data().csvUrl) {
         const url = docSnap.data().csvUrl;
-        setAdminCsvUrl(url); // Populate admin input
         
         // Fetch and parse CSV
         Papa.parse(url, {
@@ -60,7 +57,6 @@ export default function App() {
           }
         });
       } else {
-        setAdminCsvUrl('');
         setDynamicChannels([]);
       }
     }, (error) => {
@@ -69,19 +65,6 @@ export default function App() {
 
     return () => unsub();
   }, []);
-
-  const handleSaveCsv = async () => {
-    setIsSaving(true);
-    setSaveMessage('');
-    try {
-      const { setDoc } = await import('firebase/firestore');
-      await setDoc(doc(db, 'settings', 'sports'), { csvUrl: adminCsvUrl }, { merge: true });
-      setSaveMessage('CSV link updated successfully!');
-    } catch (err: any) {
-      setSaveMessage('Error saving: ' + err.message);
-    }
-    setIsSaving(false);
-  };
 
   const allChannels = useMemo(() => {
     return [...staticChannels, ...dynamicChannels];
@@ -135,40 +118,7 @@ export default function App() {
       <main className="flex-1 w-full max-w-6xl mx-auto p-4 flex flex-col gap-8">
         
         {isAdminView ? (
-          <section className="w-full max-w-2xl mx-auto py-12">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
-              <h2 className="text-2xl font-bold text-white mb-2">Admin Dashboard</h2>
-              <p className="text-slate-400 text-sm mb-8">Update the external CSV source for live TV channels. The CSV must have headers: name, url, category, logo.</p>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">CSV Google Sheet URL</label>
-                  <input 
-                    type="url" 
-                    value={adminCsvUrl}
-                    onChange={(e) => setAdminCsvUrl(e.target.value)}
-                    placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                  />
-                  <p className="text-xs text-slate-500 mt-2">Publish your Google Sheet to web as CSV and paste the link here.</p>
-                </div>
-                
-                <button 
-                  onClick={handleSaveCsv}
-                  disabled={isSaving}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {isSaving ? "Saving..." : "Save Configuration"}
-                </button>
-                
-                {saveMessage && (
-                  <p className={cn("text-sm font-medium mt-2", saveMessage.includes('Error') ? "text-red-400" : "text-green-400")}>
-                    {saveMessage}
-                  </p>
-                )}
-              </div>
-            </div>
-          </section>
+          <AdminDashboard />
         ) : (
           <>
             {/* Player Section */}
@@ -299,4 +249,5 @@ export default function App() {
     </div>
   );
 }
+
 

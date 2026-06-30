@@ -17,10 +17,7 @@ service cloud.firestore {
       allow read: if true;
       // Only admins can write config
       // allow write: if isAdmin();
-      // For now, allow writes from anyone so they can test if they don't have an admin dashboard yet?
-      // No, for security, let's restrict to admins or just isSignedIn for now?
-      // Or require signed in users to write. 
-      allow write: if isSignedIn() && request.auth.token.email_verified == true;
+      allow write: if isSignedIn();
     }
 
     match /admins/{adminId} {
